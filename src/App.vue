@@ -49,6 +49,22 @@
           <SettingItem title="CPU图表">
             <Switch v-model="settings.showCpuChart" />
           </SettingItem>
+          <SettingItem v-show="settings.showCpuChart" title="记录时间">
+            <select v-model="settings.cpuChartHistoryKeep">
+              <option value="60">
+                1分钟
+              </option>
+              <option value="180">
+                3分钟
+              </option>
+              <option value="300">
+                5分钟
+              </option>
+              <option value="600">
+                10分钟
+              </option>
+            </select>
+          </SettingItem>
         </div>
       </div>
     </Transition>
@@ -102,7 +118,6 @@ import type { ServerData } from './types'
 
 const JSON_API = '/json/stats.json'
 const CARD_WIDTH = 350
-const REFRESH_INTERVAL = 500
 const MIN_FETCH_INTERVAL = 500
 
 const { width: WindowWidth } = useWindowSize()
@@ -111,6 +126,7 @@ const settings = useLocalStorage('sstl-settings', {
   layout: 'grid',
   compactMode: false,
   showCpuChart: false,
+  cpuChartHistoryKeep: 300,
 }, {
   mergeDefaults: true,
 })
@@ -124,6 +140,7 @@ const error = ref(false)
 const fetching = ref(false)
 const showSettingPanel = ref(false)
 const latestUpdated = ref(0)
+const timer = ref<Worker>()
 
 const serverCardCount = computed(() => {
   return Math.floor(WindowWidth.value / CARD_WIDTH) || 1
@@ -138,9 +155,11 @@ onMounted(() => {
     .then(res => res.json())
     .then((data) => {
       serverData.value = data
-      setInterval(() => {
+      timer.value = new Worker(new URL('./worker/timer.js', import.meta.url))
+      timer.value.addEventListener('message', () => {
         fetchData()
-      }, REFRESH_INTERVAL)
+      })
+      timer.value.postMessage('start')
     })
     .catch(() => {
       error.value = true
@@ -148,6 +167,11 @@ onMounted(() => {
     .finally(() => {
       loading.value = false
     })
+})
+
+onUnmounted(() => {
+  if (timer.value)
+    timer.value.postMessage('stop')
 })
 
 function fetchData() {
