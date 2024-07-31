@@ -1,8 +1,24 @@
 {
-  "routes": [
-    {
-      "src": "/json/stats.json",
-      "dest": "https://ssr.rs/json/stats.json"
-    }
-  ]
+    "routes": [
+        {
+            "src": "/report",
+            "dest": "https://app.wilsonmk.xyz/report"
+        },
+        {
+            "src": "/json/stats.json",
+            "dest": "https://app.wilsonmk.xyz/json/stats.json"
+        },
+        {
+            "src": "/detail",
+            "dest": "https://app.wilsonmk.xyz/detail"
+        },
+        {
+            "src": "/map",
+            "dest": "https://app.wilsonmk.xyz/map"
+        },
+        {
+            "src": "/i",
+            "dest": "https://app.wilsonmk.xyz/i"
+        }
+    ]
 }
